@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+		<style>
+			.option-container {
+				width: 500px;
+				height: 50px;
+				background-color: aqua;
+				display: flex;
+				align-items: center;
+			}
+			.destroyer {
+				background-color: brown;
+			}
+			.submarine {
+				background-color: green;
+			}
+			.cruiser {
+				background-color: purple;
+			}
+			.battleship {
+				background-color: orange;
+			}
+			.carrier {
+				background-color: blue;
+			}
+			.destroyer-preview {
+				width: 20px;
+				height: 10px;
+				margin: 3px;
+			}
+			.submarine-preview {
+				width: 30px;
+				height: 10px;
+				margin: 3px;
+			}
+			.cruiser-preview {
+				width: 30px;
+				height: 10px;
+				margin: 3px;
+			}
+			.battleship-preview {
+				width: 30px;
+				height: 10px;
+				margin: 3px;
+			}
+
+			.carrier-preview {
+				width: 50px;
+				height: 10px;
+				margin: 3px;
+			}
+			.gameBoard {
+				width: 200px;
+				height: 200px;
+				display: flex;
+				flex-wrap: wrap;
+			}
+			#gameboard-container {
+				width: 500px;
+				display: flex;
+				justify-content: space-between;
+			}
+			.block {
+				width: 20px;
+				height: 20px;
+				border: solid 1px black;
+				box-sizing: border-box;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="game-info">
+			<p>Turn: <span id="turn-display"></span></p>
+			<p>info: <span id="info"></span></p>
+		</div>
+		<div id="gameboard-container"></div>
+		<div class="option-container">
+			<div class="destroyer-preview destroyer"></div>
+			<div class="submarine-preview submarine"></div>
+			<div class="cruiser-preview cruiser"></div>
+			<div class="battleship-preview battleship"></div>
+			<div class="carrier-preview carrier"></div>
+		</div>
+		<button id="flipBtn">FLIP</button>
+		<button id="startBtn">START</button>
+		<script>
+			const flipBtn = document.querySelector("#flipBtn")
+			const startBtn = document.querySelector("#startBtn")
+			const optionContainer = document.querySelector(".optionContainer")
+			const gamesBoardContainer = document.querySelector("#gameboard-container")
+
+			flipBtn.addEventListener("click", flip)
+
+			let angle = 0
+			const width = 10
+
+			function flip() {
+				const optionShips = Array.from(optionContainer.children)
+				optionShips.forEach((optionShip) => {
+					angle = angle === 0 ? 90 : 0
+					optionShip.style.transform = `rotate(${angle}deg)`
+				})
+			}
+			function createBoard(color, user) {
+				const gameBoardContainer = document.createElement("div")
+				gameBoardContainer.classList.add("gameBoard")
+				gameBoardContainer.style.backgroundColor = color
+				gameBoardContainer.id = user
+
+				for (let i = 0; i < 100; i++) {
+					const block = document.createElement("div")
+					block.classList.add("block")
+					block.id = i
+					gameBoardContainer.append(block)
+				}
+
+				gamesBoardContainer.append(gameBoardContainer)
+			}
+			createBoard("pink", "player")
+			createBoard("yellow", "computer")
+
+			class Ship {
+				constructor(name, length) {
+					this.name = name
+					this.length = length
+				}
+			}
+			const destroyer = new Ship("destroyer", 2)
+			const submarine = new Ship("submarine", 3)
+			const cruiser = new Ship("cruiser", 3)
+			const battleship = new Ship("battleship", 4)
+			const carrier = new Ship("carrier", 5)
+
+			const ships = [destroyer, submarine, cruiser, battleship, carrier]
+
+			console.log(ships)
+			function addShipPiece(ship) {
+				const allBoardBlocks = document.querySelectorAll("#computer div")
+				let randomBoolean = Math.random() < 0.5
+				let isHorizontal = randomBoolean
+				let randomStartIndex = Math.floor(Math.random() * 100)
+
+				let shipBlocks = []
+				let validStart = isHorizontal
+					? randomStartIndex <= width * width - ship.length
+						? randomStartIndex
+						: width * width - ship.length
+					: randomStartIndex <= width * width - width * ship.length
+					? randomStartIndex
+					: randomStartIndex - ship.length * width + width
+
+				for (let i = 0; i < ships.length; i++) {
+					if (isHorizontal) {
+						shipBlocks.push(allBoardBlocks[Number(randomStartIndex) + i])
+					} else {
+						shipBlocks.push(allBoardBlocks[Number(randomStartIndex) + i * width])
+					}
+				}
+				let valid
+				if (isHorizontal) {
+					shipBlocks.every((_shipBlock, index) => {
+						valid = shipBlocks[0].id % width !== width - shipBlocks.length - (index + 1)
+					})
+				} else {
+					shipBlocks.every((_shipBlock, index) => {
+						valid = shipBlocks[0].id < 90 + (width * index + 1)
+					})
+				}
+				const notTaken = shipBlocks.every((shipBlock) => !shipBlock.classList.contains("taken"))
+				if (valid && notTaken) {
+					shipBlocks.forEach((shipBlock) => {
+						shipBlock.classList.add(ship.name)
+						shipBlock.classList.add("taken")
+					})
+				} else {
+					addShipPiece(ship)
+				}
+			}
+			ships.forEach((ship) => {
+				addShipPiece(ship)
+				console.log(ship.length)
+			})
+		</script>
+	</body>
+</html>
